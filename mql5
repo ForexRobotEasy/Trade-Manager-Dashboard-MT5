@@ -1,0 +1,86 @@
+
+// Trade Manager Dashboard MT5
+// Developer's site: forexroboteasy.com
+// Development by: Forex Robot Easy Team
+
+#property strict
+
+// Define necessary variables
+string[] currencies; // Array to store currency names
+double[] positions; // Array to store position sizes
+double[] prices; // Array to store current prices
+int totalPositions; // Total number of positions in the portfolio
+
+// Define necessary functions
+void GetPositions()
+{
+   totalPositions = PositionsTotal();
+   ArrayResize(currencies, totalPositions);
+   ArrayResize(positions, totalPositions);
+   ArrayResize(prices, totalPositions);
+
+   for(int i=0; i<totalPositions; i++)
+   {
+      MqlTradeRequest request;
+      MqlTradeResult result;
+
+      if(PositionSelectByTicket(i))
+      {
+         positions[i] = PositionGetDouble(POSITION_VOLUME);
+         prices[i] = MarketInfo(PositionGetSymbol(), MODE_BID);
+         StringCopy(currencies[i], PositionGetSymbol(), -1);
+      }
+   }
+}
+
+void SortPositions()
+{
+   for(int i=0; i<totalPositions-1; i++)
+   {
+      for(int j=i+1; j<totalPositions; j++)
+      {
+         if(positions[i] < positions[j])
+         {
+            double tempPosition = positions[i];
+            positions[i] = positions[j];
+            positions[j] = tempPosition;
+
+            double tempPrice = prices[i];
+            prices[i] = prices[j];
+            prices[j] = tempPrice;
+
+            string tempCurrency = currencies[i];
+            currencies[i] = currencies[j];
+            currencies[j] = tempCurrency;
+         }
+      }
+   }
+}
+
+void DisplayDashboard()
+{
+   printf('==================== Trade Manager Dashboard MT5 ====================');
+   printf('Total Positions: %d', totalPositions);
+
+   for(int i=0; i<totalPositions; i++)
+   {
+      printf('----------------------------------');
+      printf('Currency: %s', currencies[i]);
+      printf('Position Size: %.2f', positions[i]);
+      printf('Current Price: %.5f', prices[i]);
+   }
+
+   printf('========================= End of Dashboard ==========================');
+}
+
+// Define the main program
+void OnStart()
+{
+   // Get and sort positions
+   GetPositions();
+   SortPositions();
+
+   // Display dashboard
+   DisplayDashboard();
+}
+
